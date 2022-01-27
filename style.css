@@ -1,0 +1,68 @@
+.loginBtn {
+    margin-right: 15px;
+}
+
+#section {
+    background-color: aqua;
+    padding: 150px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 100px;
+}
+
+.btn {
+    width: 130px;
+    margin: 0 20px 0 20px;
+}
+
+.aText {
+    text-decoration: none;
+    color: white;
+}
+
+.margin50 {
+    margin: 50px;
+}
+
+.marginTop10 {
+    margin-top: 10px;
+}
+
+#addNew_Form,
+#login_Form,
+#register_Form {
+    display: none;
+    animation-duration: 1.5s;
+    animation-fill-mode: both;
+    animation-name: fadeIn;
+}
+
+#addNew_Form.open,
+#login_Form.open,
+#register_Form.open {
+    display: block;
+}
+
+
+/* hiddenData */
+
+#hiddenData {
+    display: flex;
+    flex-wrap: wrap;
+    width: 700px;
+}
+
+.card {
+    width: 300px;
+    float: left;
+    margin: 1rem;
+    border: 1px solid #d3d3d3;
+    padding: 15px;
+    border-radius: 5px;
+    background-color: white;
+}
+
+.hideMe {
+    display: none;
+}
