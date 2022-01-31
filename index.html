@@ -257,8 +257,8 @@
                 <button class="btn btn-primary insertNewPSBtn">Add New</button>
                 <div id="addNewPS_Form">
                     <form id="savePaymentStatus" role="form" autocomplete="off" method="POST">
-                        <label>Status Code</label>
-                        <input type="number" id="statusCode" required>
+                        <label>Status</label>
+                        <input type="text" id="status" required>
                         <label>Description</label>
                         <input type="text" id="description"> required
 
@@ -305,6 +305,8 @@
                         <label>Order Information</label>
                         <textarea name="orderInfo" id="orderInfo" cols="22" rows="10" required></textarea>
                         <!-- <input type="text" name="orderInfo"> -->
+                        <label>UserID </label>
+                        <input type="number" id="userId" required>
                         <label>Sum </label>
                         <input type="number" id="sum" required>
                         <label>Status ID</label>

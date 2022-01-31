@@ -342,10 +342,10 @@ $(document).ready(function () {
                     var templateString = '<div class="card"><div class="card-body"><h5 class="card-title">' +
                         'Payment Status ' + '</h5> <hr>' +
                         '<div class="first_block">' + '<p class="card-text">' +
-                        'Status Code: ' + data.paymentStatusList[i].statusCode + '</p><p class="card-text">' +
-                        'Description: ' + data.paymentStatusList[i].description + '</p>' + '<button id="delete_' + data.paymentStatusList[i].statusCode + '" class="deleteElem btn-danger" name="payment-status">Delete</button>' +
-                        '<button id = "updBtn_' + data.paymentStatusList[i].statusCode + '" class="updateElem btn-warning">Update</button>' + '</div>' +
-                        '<div id="updDiv_' + data.paymentStatusList[i].statusCode + '" class="second_block" style="display:none;">' + '<input type="text" disabled class="form-control" value="' + data.paymentStatusList[i].statusCode + '"</input>' + '<input id="inputID_' + data.paymentStatusList[i].statusCode + '" type="text" class="form-control" value="' + data.paymentStatusList[i].description + '"</input>' +
+                        'Status: ' + data.paymentStatusList[i].status + '</p><p class="card-text">' +
+                        'Description: ' + data.paymentStatusList[i].description + '</p>' + '<button id="delete_' + data.paymentStatusList[i].id + '" class="deleteElem btn-danger" name="payment-status">Delete</button>' +
+                        '<button id = "updBtn_' + data.paymentStatusList[i].id + '" class="updateElem btn-warning">Update</button>' + '</div>' +
+                        '<div id="updDiv_' + data.paymentStatusList[i].id + '" class="second_block" style="display:none;">' + '<input type="text" disabled class="form-control" value="' + data.paymentStatusList[i].status + '"</input>' + '<input id="inputID_' + data.paymentStatusList[i].id + '" type="text" class="form-control" value="' + data.paymentStatusList[i].description + '"</input>' +
                         '<button class= "btn btn-warning saveElem" name="payment-status">Save</button>' + '</div>' +
                         '</div> </div>';
 
@@ -368,7 +368,7 @@ $(document).ready(function () {
             method: "POST",
             url: "http://localhost:8000/payment-status/",
             data: {
-                'statusCode': $("#statusCode").val(),
+                'status': $("#status").val(),
                 'description': $("#description").val()
             }
         })
@@ -389,21 +389,29 @@ $(document).ready(function () {
                 for (var i = 0; i < data.transactions.length; i++) {
                     var templateString = '<div class="card"><div id="tranDiv_' +data.transactions[i].id+'" class="card-body"><h5 class="card-title">' +
                         'Transaction ' + data.transactions[i].id + '</h5> <hr>' +
+                        '<p id="transactP_'+data.transactions[i].id+ '" class="card-text">' + data.transactions[i].userId + '</p>' +
                         '<p id="tranP_'+data.transactions[i].id+ '" class="card-text">' + 'OrderInfo: ' + data.transactions[i].orderInfo + '</p>' +
-                        '<p class="card-text">' + 'Sum: ' + data.transactions[i].sum + '</p>' +
-                        '<p class="card-text">' + 'Status Code: ' + data.transactions[i].statusId.statusCode + '</p>' +
+                        '<p id="sumP_'+data.transactions[i].id+'" class="card-text">' + data.transactions[i].sum + '</p>' +
+                        '<p class="forStatusId card-text" id="statusId_'+data.transactions[i].statusId.id+'">' + 'Status: ' + data.transactions[i].statusId.status + '</p>' +
                         '<p class="card-text">' + 'PaymentMethodID: ' + data.transactions[i].paymentMethodId.methodName + '</p>' +
                         '<p class="card-text">' + 'Bank ID: ' + data.transactions[i].BankId.config + '</p>' +
                         '<p class="card-text">' + 'Date: ' + data.transactions[i].date + '</p> </div> </div>';
 
                     $('#hiddenDataTransaction').append(templateString);
-                    var templateConfirmed;
-                    if(data.transactions[i].orderInfo.includes('Подтвержден')){
-                        templateConfirmed = '<button disabled class ="btn btn-success">Подтвержден</button>'
-                    }else{
-                        templateConfirmed = '<button class ="btn btn-dark confirm">Подтвердить</button>'
+                    var templateConfirmed="";
+                    if(data.transactions[i].statusId.status == "Не оплачено"){
+                        templateConfirmed = '<button class ="btn btn-success pay">Оплатить</button>'
+                    }else if(data.transactions[i].statusId.status == "Оплачено"){
+                        templateConfirmed = '<button class ="btn btn-dark refund">Возврат</button>'
                     }
-                    $('.card-body').append(templateConfirmed);
+                    else{
+                        templateConfirmed = "";
+                    }
+                    //$('.card-body').append(templateConfirmed);
+
+                    let id = "#tranDiv_"+data.transactions[i].id;
+                    $(id).append(templateConfirmed);
+                    templateConfirmed="";
                 }
                 style = document.getElementById("hiddenDataTransaction").style;
 
@@ -415,6 +423,110 @@ $(document).ready(function () {
                 }
 
             });
+    });
+
+    $(document).on('click', '.pay', function (event) {
+        let transactionId = $(this).closest('.card-body')[0].id.split('_')[1];
+        $.ajax({
+            method: "PUT",             
+            url: "http://127.0.0.1:8000/" + "transaction" + "/" + transactionId,
+           
+            data: {statusId:2}
+        })
+        .done(function(data) {
+            console.log(data)
+        });
+
+        let forUserId = "#transactP_"+transactionId;
+        let userId = $(forUserId).text();
+        let forSum = "#sumP_"+transactionId
+        let sum = $(forSum).text()
+        
+        $.ajax({
+            method: "GET",             
+            url: "http://127.0.0.1:8000/" + "balance" + "/" + userId,
+           
+        })
+        .done(function(data) {
+            $.ajax({
+                method: "PUT",             
+                url: "http://127.0.0.1:8000/" + "updateBalance" + "/" + data.balance.id,
+
+                data: {
+                    "currentBalance": data.balance.currentBalance-sum,                    
+                }
+               
+            })
+            .done(function(data) {
+                console.log(data)
+                let asdf = {
+                        
+                };
+                $.ajax({
+                    method: "POST",             
+                    url: "http://127.0.0.1:7000/api/" + "notifications/",
+                    dataType: "json",
+                    contentType: "application/json",
+                    data:  JSON.stringify({
+                         "notification":{
+                               "params":{
+                                           "PARAMS1":"abdulla123123123123",
+                                           "PARAMS2":"dsafsadfsadfsdaf",
+                                           "PARAMS3":"ghdhdhfdh"
+                                           },
+                               "sendMethodID_id": 2,
+                               "templateID_id": 1
+                           }
+                       })
+                   
+                })
+                .done(function(data) {
+                    console.log(data)
+                });
+            });
+        });
+
+    });
+
+    $(document).on('click', '.refund', function (event) {
+        let transactionId = $(this).closest('.card-body')[0].id.split('_')[1];
+        $.ajax({
+            method: "PUT",             
+            url: "http://127.0.0.1:8000/" + "transaction" + "/" + transactionId,
+           
+            data: {statusId:1}
+        })
+        .done(function(data) {
+            console.log(data)
+        });
+
+        let forUserId = "#transactP_"+transactionId;
+        let userId = $(forUserId).text();
+        let forSum = "#sumP_"+transactionId
+        let sum = $(forSum).text()
+        console.log()
+        
+        $.ajax({
+            method: "GET",             
+            url: "http://127.0.0.1:8000/" + "balance" + "/" + userId,
+           
+        })
+        .done(function(data) {
+            $.ajax({
+                method: "PUT",             
+                url: "http://127.0.0.1:8000/" + "updateBalance" + "/" + data.balance.id,
+                
+                data: {                    
+                    "currentBalance": Number(sum)+Number(data.balance.currentBalance),                    
+                }
+               
+            })
+            .done(function(data) {
+                console.log(data)
+               
+            });
+        });
+
     });
 
     $(document).on('click', '.confirm', function (event) {
@@ -441,16 +553,18 @@ $(document).ready(function () {
     
 
     $("#saveTransaction").submit(function (event) {
+      
         $.ajax({
             method: "POST",
-            url: "http://localhost:8000/payment-status/",
+            url: "http://localhost:8000/transaction/",
             data: {
+                'userId': $("#userId").val(),
                 'orderInfo': $("#orderInfo").val(),
                 'sum': $("#sum").val(),
                 'statusId': $("#statusId").val(),
                 'paymentMethodId': $("#paymentMethodId").val(),
                 'BankId': $("#BankId").val(),
-                'date': $("#date").val()
+                'date': $("#transactionDate").val()
             }
         })
             .done(function (data) {
@@ -462,3 +576,10 @@ $(document).ready(function () {
 });
 
 
+// var templateConfirmed="";
+                    // if(data.transactions[i].orderInfo.includes('Подтвержден')){
+                    //     templateConfirmed = '<button disabled class ="btn btn-success">Подтвержден</button>'
+                    // }else{
+                    //     templateConfirmed = '<button class ="btn btn-dark confirm">Подтвердить</button>'
+                    // }
+                    // $('.card-body').append(templateConfirmed);
